@@ -37,4 +37,4 @@ sudo apt-get update -y
 sudo apt-mark hold kubectl
 
 sudo apt-get install -y jq
-sudo apt-get install docker.io
+sudo apt-get install -y docker.io 
