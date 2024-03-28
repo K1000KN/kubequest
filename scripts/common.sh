@@ -15,13 +15,18 @@ sudo swapoff -a
 (crontab -l 2>/dev/null; echo "@reboot /sbin/swapoff -a") | crontab - || true
 sudo apt-get update -y
 
-# Install kind, kompose kubelet, kubectl, docker and Kubeadmm 
+# Install kind, kompose kubelet, kubectl, traefik,  docker and Kubeadmm
 [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.22.0/kind-linux-amd64
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 curl -L https://github.com/kubernetes/kompose/releases/download/v1.32.0/kompose-linux-amd64 -o kompose
 chmod +x kompose
 sudo mv ./kompose /usr/local/bin/kompose
+wget https://github.com/traefik/traefik/releases/download/v2.10.7/traefik_v2.10.7_linux_amd64.tar.gz
+tar -xf traefik_v2.10.7_linux_amd64.tar.gz
+rm *md
+sudo mv traefik /usr/local/bin
+
 sudo apt-get update -y
 sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
@@ -37,4 +42,4 @@ sudo apt-get update -y
 sudo apt-mark hold kubectl
 
 sudo apt-get install -y jq
-sudo apt-get install -y docker.io 
+sudo apt-get install -y docker.io
