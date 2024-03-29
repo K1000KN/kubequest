@@ -46,7 +46,7 @@ spec:
             - name: DB_USERNAME
               value: app_user
 
-          image: sample-app:latest
+          image: ghcr.io/k1000kn/sample-app:latest
           imagePullPolicy: Never
           name: app
           command:
@@ -54,7 +54,7 @@ spec:
             - "-c"
             - "php artisan migrate && php artisan db:seed && apache2-foreground"
           ports:
-            - containerPort: 80
-              hostPort: 8081
+            - containerPort: 8081
+              hostPort: 80
               protocol: TCP
       restartPolicy: Always
