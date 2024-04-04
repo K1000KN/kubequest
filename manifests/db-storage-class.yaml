@@ -1,8 +1,6 @@
-
-
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: db-data
+  name: db-storage-class
 provisioner: kubernetes.io/no-provisioner
 volumeBindingMode: WaitForFirstConsumer
