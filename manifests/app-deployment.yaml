@@ -48,7 +48,7 @@ spec:
               value: "3306"
             - name: DB_USERNAME
               value: app_user
-          image: app
+          image: ghcr.io/k1000kn/sample-app:latest
           name: app
           ports:
             - containerPort: 80
