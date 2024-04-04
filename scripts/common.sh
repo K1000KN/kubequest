@@ -2,26 +2,6 @@
 #
 # Common setup for all servers (Control Plane and Nodes)
 
-set -euxo pipefail
-
-# Kuernetes Variable Declaration
-
-KUBERNETES_VERSION="1.29.0-1.1"
-
-# disable swap
-sudo swapoff -a
-
-# keeps the swaf off during reboot
-(crontab -l 2>/dev/null; echo "@reboot /sbin/swapoff -a") | crontab - || true
-sudo apt-get update -y
-
-
-# Install CRI-O Runtime
-
-OS="xUbuntu_22.04"
-
-VERSION="1.28"
-
 # Create the .conf file to load the modules at bootup
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
@@ -41,39 +21,64 @@ EOF
 # Apply sysctl params without reboot
 sudo sysctl --system
 
-cat <<EOF | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /
-EOF
-cat <<EOF | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
-deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /
-EOF
+# Install containerd as container runtime
+sudo apt-get update -y
+sudo apt-get install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg 
 
-curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/Release.key | sudo apt-key --keyring /etc/apt/trusted.gpg.d/libcontainers.gpg add -
-curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key --keyring /etc/apt/trusted.gpg.d/libcontainers.gpg add -
+echo \
+"deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+"$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+sudo tee /etc/apt/sources.list.d/docker.list > /dev/null 
 
-sudo apt-get update
-sudo apt-get install cri-o cri-o-runc -y
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+    sudo MKdir /etc/docker
+    cat <<EOF | sudo tee /etc/docker/daemon.json
+    {
+      "exec-opts": ["native.cgroupdriver=systemd"],
+      "log-driver": "json-file",
+      "log-opts": {
+      "max-size": "100m"
+      },
+      "storage-driver": "overlay2"
+      }
+      EOF
+
+sudo systemctl enable docker
 sudo systemctl daemon-reload
-sudo systemctl enable crio --now
+sudo systemctl restart docker
 
+# Disable swap
+sudo swapoff -a
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
+sudo containerd config default > /etc/containerd/config.toml
+
+# Define the path to the containerd config file
+CONFIG_FILE="/etc/containerd/config.toml"
+
+# Backup the original configuration
+sudo cp $CONFIG_FILE $CONFIG_FILE.backup
+
+# Use sed to change SystemdCgroup from false to true
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' $CONFIG_FILE
+
+systemctl restart containerd
 
 # Install kubelet, kubectl and Kubeadm
+sudo apt-get update -y
+sudo apt-get install -y apt-transport-https ca-certificates curl
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 sudo apt-get update -y
-sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-1-29-apt-keyring.gpg
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-1-29-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes-1.29.list
+sudo apt-get install -y kubelet kubeadm kubectl
 
-sudo apt-get update -y
-sudo apt-get install -y kubelet="$KUBERNETES_VERSION" kubectl="$KUBERNETES_VERSION" kubeadm="$KUBERNETES_VERSION"
-sudo apt-get update -y
 sudo apt-mark hold kubelet kubeadm kubectl
 
-sudo apt-get install -y jq
 
-local_ip="$(ip --json addr show eth0 | jq -r '.[0].addr_info[] | select(.family == "inet") | .local')"
-cat > /etc/default/kubelet << EOF
-KUBELET_EXTRA_ARGS=--node-ip=$local_ip
-EOF
