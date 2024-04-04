@@ -1,29 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yaml
-    kompose.version: 1.32.0 (765fde254)
-    traefik.enable: "true"
-    traefik.http.routers.app.rule: Host(`localhost`)
-  labels:
-    io.kompose.service: app
-  name: app
+  name: app-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: app
+      app: app-php
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f docker-compose.yaml
-        kompose.version: 1.32.0 (765fde254)
-        traefik.enable: "true"
-        traefik.http.routers.app.rule: Host(`localhost`)
       labels:
-        io.kompose.network/k8s-default: "true"
-        io.kompose.service: app
+        app: app-php
     spec:
       containers:
         - env:
@@ -38,7 +25,7 @@ spec:
             - name: DB_DATABASE
               value: app_database
             - name: DB_HOST
-              value: db
+              value: db-service
             - name: DB_PASSWORD
               value: app_password
             - name: DB_PORT
@@ -49,12 +36,10 @@ spec:
           image: ghcr.io/k1000kn/sample-app:latest
           imagePullPolicy: IfNotPresent
           name: app
-          command:
-            - "sh"
-            - "-c"
-            - "php artisan migrate && php artisan db:seed && apache2-foreground"
+   #       command:
+  #          - "sh"
+ #           - "-c"
+#            - "php artisan migrate && php artisan db:seed && apache2-foreground"
           ports:
             - containerPort: 8081
-              hostPort: 80
-              protocol: TCP
       restartPolicy: Always
