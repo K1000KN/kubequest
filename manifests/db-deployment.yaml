@@ -1,27 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yaml
-    kompose.version: 1.32.0 (765fde254)
+  name: db-deployment
   labels:
-    io.kompose.service: db
-  name: db
+    app: db-mysql
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: db
+      app: db-mysql
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f docker-compose.yaml
-        kompose.version: 1.32.0 (765fde254)
       labels:
-        io.kompose.network/k8s-default: "true"
-        io.kompose.service: db
+        app: db-mysql
     spec:
       containers:
         - env:
@@ -37,8 +30,6 @@ spec:
           name: db
           ports:
             - containerPort: 3306
-              hostPort: 3306
-              protocol: TCP
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: db-data
