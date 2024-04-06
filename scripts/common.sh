@@ -37,17 +37,17 @@ sudo apt-get update -y
 
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    sudo mkdir /etc/docker
-    cat <<EOF | sudo tee /etc/docker/daemon.json
-    {
-      "exec-opts": ["native.cgroupdriver=systemd"],
-      "log-driver": "json-file",
-      "log-opts": {
-      "max-size": "100m"
-      },
-      "storage-driver": "overlay2"
-      }
-      EOF
+sudo mkdir /etc/docker
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+"exec-opts": ["native.cgroupdriver=systemd"],
+"log-driver": "json-file",
+"log-opts": {
+"max-size": "100m"
+},
+"storage-driver": "overlay2"
+}
+EOF
 
 sudo systemctl enable docker
 sudo systemctl daemon-reload
@@ -82,5 +82,3 @@ sudo apt-get update -y
 sudo apt-get install -y kubelet kubeadm kubectl
 
 sudo apt-mark hold kubelet kubeadm kubectl
-
-
