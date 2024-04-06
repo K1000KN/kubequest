@@ -68,7 +68,7 @@ sudo cp $CONFIG_FILE $CONFIG_FILE.backup
 # Use sed to change SystemdCgroup from false to true
 sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' $CONFIG_FILE
 
-systemctl restart containerd
+sudo systemctl restart containerd
 
 # Install kubelet, kubectl and Kubeadm
 sudo apt-get update -y
