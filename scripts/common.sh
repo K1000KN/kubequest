@@ -4,7 +4,7 @@ sudo swapoff -a
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 wget https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-amd64.tar.gz
-tar Cxzvf /usr/local containerd-1.6.16-linux-amd64.tar.gz
+sudo tar Cxzvf /usr/local containerd-1.6.16-linux-amd64.tar.gz
 wget https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
 sudo mkdir -p /usr/local/lib/systemd/system
 sudo mv containerd.service /usr/local/lib/systemd/system/containerd.service
