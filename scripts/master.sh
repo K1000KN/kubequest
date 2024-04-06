@@ -5,7 +5,6 @@
 set -euxo pipefail
 
 NODENAME=$(hostname -s)
-POD_CIDR="192.168.0.0/16"
 
 # Pull required images
 
@@ -13,10 +12,6 @@ sudo kubeadm config images pull
 
 # Initialize kubeadm based on PUBLIC_IP_ACCESS
 MASTER_PUBLIC_IP=$(curl ifconfig.me && echo "")
-sudo kubeadm init --control-plane-endpoint="$MASTER_PUBLIC_IP" --apiserver-cert-extra-sans="$MASTER_PUBLIC_IP" --pod-network-cidr="$POD_CIDR" --node-name "$NODENAME" --ignore-preflight-errors Swap
+sudo kubeadm init --control-plane-endpoint="$MASTER_PUBLIC_IP" --node-name "$NODENAME"
 
-# Configure kubeconfig
-
-mkdir -p "$HOME"/.kube
-sudo cp -i /etc/kubernetes/admin.conf "$HOME"/.kube/config
-sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml

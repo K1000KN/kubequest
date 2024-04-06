@@ -12,11 +12,13 @@ KUBERNETES_VERSION="1.29.0-1.1"
 sudo swapoff -a
 
 # keeps the swaf off during reboot
-(crontab -l 2>/dev/null; echo "@reboot /sbin/swapoff -a") | crontab - || true
+(
+	crontab -l 2>/dev/null
+	echo "@reboot /sbin/swapoff -a"
+) | crontab - || true
 sudo apt-get update -y
 
-
-# Install CRI-O Runtime
+# Install containerd
 
 OS="xUbuntu_22.04"
 
@@ -41,23 +43,36 @@ EOF
 # Apply sysctl params without reboot
 sudo sysctl --system
 
-cat <<EOF | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /
-EOF
-cat <<EOF | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
-deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /
-EOF
-
-curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/Release.key | sudo apt-key --keyring /etc/apt/trusted.gpg.d/libcontainers.gpg add -
-curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key --keyring /etc/apt/trusted.gpg.d/libcontainers.gpg add -
-
-sudo apt-get update
-sudo apt-get install cri-o cri-o-runc -y
-
+wget https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-amd64.tar.gz
+sudo tar Cxzvf /usr/local containerd-1.6.16-linux-amd64.tar.gz
+wget https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+sudo mkdir -p /usr/local/lib/systemd/system
+sudo mv containerd.service /usr/local/lib/systemd/system/containerd.service
 sudo systemctl daemon-reload
-sudo systemctl enable crio --now
+sudo systemctl enable --now containerd
 
-echo "CRI runtime installed susccessfully"
+# Install Runc
+wget https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
+sudo install -m 755 runc.amd64 /usr/local/sbin/runc
+
+# Install CNI
+wget https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz
+sudo mkdir -p /opt/cni/bin
+sudo tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64-v1.2.0.tgz
+
+# Install CRICTL
+VERSION="v1.26.0" # check latest version in /releases page
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
+
+cat <<EOF | sudo tee /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 2
+debug: false
+pull-image-on-create: false
+EOF
 
 # Install kubelet, kubectl and Kubeadm
 
@@ -74,10 +89,3 @@ sudo apt-get update -y
 sudo apt-get install -y kubelet="$KUBERNETES_VERSION" kubectl="$KUBERNETES_VERSION" kubeadm="$KUBERNETES_VERSION"
 sudo apt-get update -y
 sudo apt-mark hold kubelet kubeadm kubectl
-
-sudo apt-get install -y jq
-
-local_ip="$(ip --json addr show eth0 | jq -r '.[0].addr_info[] | select(.family == "inet") | .local')"
-cat > /etc/default/kubelet << EOF
-KUBELET_EXTRA_ARGS=--node-ip=$local_ip
-EOF
