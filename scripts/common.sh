@@ -6,7 +6,7 @@ set -euxo pipefail
 
 # Kuernetes Variable Declaration
 
-KUBERNETES_VERSION="1.27"
+KUBERNETES_VERSION="1.27.7"
 
 # disable swap
 sudo swapoff -a
