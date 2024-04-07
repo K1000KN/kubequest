@@ -40,7 +40,7 @@ EOF
 sudo sysctl --system
 
 wget https://github.com/containerd/containerd/releases/download/v1.7.14/containerd-1.7.14-linux-amd64.tar.gz
-sudo tar Cxzvf /usr/local containerd-1.6.16-linux-amd64.tar.gz
+sudo tar Cxzvf /usr/local containerd-1.7.14-linux-amd64.tar.gz
 wget https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
 sudo mkdir -p /usr/local/lib/systemd/system
 sudo mv containerd.service /usr/local/lib/systemd/system/containerd.service
