@@ -14,4 +14,4 @@ sudo kubeadm config images pull
 MASTER_PUBLIC_IP=$(curl ifconfig.me && echo "")
 sudo kubeadm init --control-plane-endpoint="$MASTER_PUBLIC_IP" --node-name "$NODENAME"
 
-kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s-1.11.yaml
