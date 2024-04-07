@@ -15,8 +15,8 @@ POD_CIDR="192.168.0.0/16"
 sudo kubeadm config images pull
 
 # Initialize kubeadm based on PUBLIC_IP_ACCESS
-MASTER_PUBLIC_IP=$(curl ifconfig.me && echo "")
-sudo kubeadm init --control-plane-endpoint="$MASTER_PUBLIC_IP" --pod-network-cidr="$POD_CIDR" --node-name "$NODENAME" --ignore-preflight-errors Swap
+# MASTER_PUBLIC_IP=$(curl ifconfig.me && echo "")
+sudo kubeadm init --pod-network-cidr="$POD_CIDR"
 
 # Configure kubeconfig
 
