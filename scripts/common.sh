@@ -20,10 +20,6 @@ sudo apt-get update -y
 
 # Install containerd
 
-OS="xUbuntu_22.04"
-
-VERSION="1.28"
-
 # Create the .conf file to load the modules at bootup
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
@@ -61,7 +57,7 @@ sudo mkdir -p /opt/cni/bin
 sudo tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64-v1.2.0.tgz
 
 # Install CRICTL
-VERSION="v1.26.0" # check latest version in /releases page
+VERSION="v1.29.0" # check latest version in /releases page
 wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
 sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
 rm -f crictl-$VERSION-linux-amd64.tar.gz
