@@ -15,8 +15,9 @@ POD_CIDR="192.168.0.0/16"
 sudo kubeadm config images pull
 
 # Initialize kubeadm based on PUBLIC_IP_ACCESS
-# MASTER_PUBLIC_IP=$(curl ifconfig.me && echo "")
-sudo kubeadm init --pod-network-cidr="$POD_CIDR"
+
+MASTER_PUBLIC_IP=$(curl ifconfig.me && echo "")
+sudo kubeadm init --apiserver-advertise-address="$MASTER_PUBLIC_IP" --pod-network-cidr="$POD_CIDR"
 
 # Configure kubeconfig
 
