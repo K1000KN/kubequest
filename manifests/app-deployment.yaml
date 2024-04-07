@@ -33,7 +33,7 @@ spec:
             - name: APP_DEBUG
               value: "true"
             - name: APP_ENV
-              value: "dev"
+              value: "local"
             - name: APP_KEY
               value: "base64:DJYTvaRkEZ/YcQsX3TMpB0iCjgme2rhlIOus9A1hnj4="
             - name: DB_CONNECTION
