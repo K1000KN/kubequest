@@ -8,7 +8,7 @@ set -euxo pipefail
 
 PUBLIC_IP_ACCESS="true"
 NODENAME=$(hostname -s)
-POD_CIDR="10.0.0.0/20"
+POD_CIDR="192.168.0.0/16"
 
 # Pull required images
 
