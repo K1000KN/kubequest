@@ -15,7 +15,7 @@ sudo kubeadm config images pull
 # Initialize kubeadm based on PUBLIC_IP_ACCESS
 
 MASTER_PUBLIC_IP=masterepi.westeurope.cloudapp.azure.com
-sudo kubeadm init --apiserver-advertise-address="$MASTER_PUBLIC_IP" --pod-network-cidr="$POD_CIDR"
+sudo kubeadm init --control-plane-endpoint="$MASTER_PUBLIC_IP" --pod-network-cidr="$POD_CIDR"
 
 # Configure kubeconfig
 
