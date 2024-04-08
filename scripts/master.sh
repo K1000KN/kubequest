@@ -1,14 +1,12 @@
 #!/bin/bash
 #
 # Setup for Control Plane (Master) servers
-
-set -euxo pipefail
-
+#
 # If you need public access to API server using the servers Public IP adress, change PUBLIC_IP_ACCESS to true.
 
 PUBLIC_IP_ACCESS="true"
 NODENAME=$(hostname -s)
-POD_CIDR="192.168.0.0/16"
+POD_CIDR="10.244.0.0/16"
 
 # Pull required images
 
@@ -25,6 +23,6 @@ mkdir -p "$HOME"/.kube
 sudo cp -i /etc/kubernetes/admin.conf "$HOME"/.kube/config
 sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
 
-# Install antrea Network Plugin Network
+# Install flannel Plugin Network
 
-kubectl apply -f https://github.com/antrea-io/antrea/releases/download/v1.11.4/antrea.yml
+kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
