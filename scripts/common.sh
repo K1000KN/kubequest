@@ -2,8 +2,6 @@
 #
 # Common setup for all servers (Control Plane and Nodes)
 
-set -euxo pipefail
-
 # disable swap
 sudo swapoff -a
 
@@ -39,40 +37,43 @@ EOF
 # Apply sysctl params without reboot
 sudo sysctl --system
 
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker.gpg
-echo \
-	"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+cat <<EOF | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /
+EOF
+cat <<EOF | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
+deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /
+EOF
 
-sudo apt update -y
+curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/Release.key | sudo apt-key --keyring /etc/apt/trusted.gpg.d/libcontainers.gpg add -
+curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key --keyring /etc/apt/trusted.gpg.d/libcontainers.gpg add -
 
-sudo apt install containerd.io
+sudo apt-get update -y
+sudo apt-get install cri-o cri-o-runc -y
 
-sudo systemctl stop containerd
+sudo systemctl daemon-reload
+sudo systemctl enable crio --now
 
-sudo mv /etc/containerd/config.toml /etc/containerd/config.toml.orig
-sudo containerd config default >/etc/containerd/config.toml
-
-sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
-
-sudo systemctl start containerd
+echo "CRI runtime installed susccessfully"
 
 # Install kubelet, kubectl and Kubeadm
 
-sudo apt install apt-transport-https ca-certificates curl -y
+sudo apt-get update -y
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 
-sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/k8s.gpg
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
-sudo apt update -y
-
-sudo apt install kubelet kubeadm kubectl
-
+sudo apt-get update -y
+sudo apt-get install -y kubelet kubectl kubeadm
 sudo apt-mark hold kubelet kubeadm kubectl
-
-# install CNI plugin (Flannel)
 
 sudo mkdir -p /opt/bin/
 sudo curl -fsSLo /opt/bin/flanneld https://github.com/flannel-io/flannel/releases/download/v0.19.0/flanneld-amd64
-
 sudo chmod +x /opt/bin/flanneld
+
+sudo apt-get install -y jq
+
+local_ip="$(ip --json addr show eth0 | jq -r '.[0].addr_info[] | select(.family == "inet") | .local')"
+cat >/etc/default/kubelet <<EOF
+KUBELET_EXTRA_ARGS=--node-ip=$local_ip
+EOF
