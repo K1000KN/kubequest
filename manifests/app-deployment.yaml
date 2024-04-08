@@ -41,7 +41,7 @@ spec:
             - name: DB_DATABASE
               value: "app_database"
             - name: DB_HOST
-              value: "db.default.svc"
+              value: "$(DB_SERVICE_HOST)"
             - name: DB_PASSWORD
               value: "app_password"
             - name: DB_PORT
@@ -50,6 +50,7 @@ spec:
               value: "app_user"
           image: ghcr.io/k1000kn/sample-app:latest
           name: app
+          command: ['sh', '-c', ' php artisan serve && php artisan db:seed']
           ports:
             - containerPort: 80
               hostPort: 8081
