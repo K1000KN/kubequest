@@ -42,7 +42,6 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: db-data
-              subPath: mysql
       restartPolicy: Always
       volumes:
         - name: db-data
