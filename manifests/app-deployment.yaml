@@ -38,7 +38,14 @@ spec:
               value: "app_user"
           image: ghcr.io/k1000kn/sample-app:latest
           name: app
-          command: ['sh', '-c', ' php artisan serve && php artisan db:seed']
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              php artisan migrate --force
+              php artisan db:seed --force
+              apache2-foreground
           ports:
             - containerPort: 80
               hostPort: 8081
