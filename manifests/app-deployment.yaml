@@ -5,7 +5,7 @@ metadata:
     io.kompose.service: app
   name: app
 spec:
-  replicas: 1
+  replicas: 4
   selector:
     matchLabels:
       io.kompose.service: app
@@ -17,25 +17,9 @@ spec:
         io.kompose.service: app
     spec:
       containers:
-        - env:
-            - name: APP_DEBUG
-              value: "true"
-            - name: APP_ENV
-              value: "local"
-            - name: APP_KEY
-              value: "base64:DJYTvaRkEZ/YcQsX3TMpB0iCjgme2rhlIOus9A1hnj4="
-            - name: DB_CONNECTION
-              value: "mysql"
-            - name: DB_DATABASE
-              value: "app_database"
-            - name: DB_HOST
-              value: "$(DB_SERVICE_HOST)"
-            - name: DB_PASSWORD
-              value: "app_password"
-            - name: DB_PORT
-              value: "3306"
-            - name: DB_USERNAME
-              value: "app_user"
+        - envFrom:
+            - secretRef:
+                name: app-secret
           image: ghcr.io/k1000kn/sample-app:latest
           name: app
           command:

@@ -18,15 +18,9 @@ spec:
         io.kompose.service: db
     spec:
       containers:
-        - env:
-            - name: MYSQL_DATABASE
-              value: app_database
-            - name: MYSQL_PASSWORD
-              value: app_password
-            - name: MYSQL_ROOT_PASSWORD
-              value: app_root_password
-            - name: MYSQL_USER
-              value: app_user
+        - envFrom:
+            - secretRef:
+                name: db-secret
           image: mysql:5.7
           name: db
           resources: {}
