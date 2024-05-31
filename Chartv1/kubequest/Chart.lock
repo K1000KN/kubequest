@@ -1,0 +1,12 @@
+dependencies:
+- name: mysql
+  repository: https://charts.bitnami.com/bitnami
+  version: 9.3.4
+- name: traefik
+  repository: https://helm.traefik.io/traefik
+  version: 26.1.0
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 58.0.0
+digest: sha256:74163ce2f3ae0a910099f92ea91598db09a4025240dab617db439788af915fb9
+generated: "2024-04-11T17:07:37.721527681+02:00"

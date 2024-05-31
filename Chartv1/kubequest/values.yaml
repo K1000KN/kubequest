@@ -1,0 +1,55 @@
+app:
+  repository: "sample-app"
+  tag: "latest"
+  imagePullPolicy: "Never"
+
+configMap:
+  app:
+    APP_ENV: "local"
+    APP_DEBUG: "true"
+    DB_PORT: "3306"
+    DB_HOST: "kubequest-mysql"
+    APP_KEY: "base64:DJYTvaRkEZ/YcQsX3TMpB0iCjgme2rhlIOus9A1hnj4="
+
+secrets:
+  app:
+    DB_DATABASE: "app_database"
+    DB_USERNAME: "app_user"
+    DB_PASSWORD: "app_password"
+
+mysql:
+  auth:
+    rootPassword: "app_root_password"
+    username: "app_user"
+    password: "app_password"
+    database: "app_database" 
+
+traefik:
+  image:
+    name: traefik
+    pullPolicy: IfNotPresent
+  service:
+    type: NodePort
+  ports:
+    web:
+      nodePort: 32000
+    websecure:
+      nodePort: 32001
+  nodeSelector:
+    ingress-ready: 'true'
+  tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    scrapeTimeout: "90s"
+    scrapeInterval: "90s"
+grafana:
+  sidecar:
+    datasources:
+      defaultDatasourceEnabled: true
