@@ -72,11 +72,3 @@ sudo apt-mark hold kubelet kubeadm kubectl
 sudo mkdir -p /opt/bin/
 sudo curl -fsSLo /opt/bin/flanneld https://github.com/flannel-io/flannel/releases/download/v0.19.0/flanneld-amd64
 sudo chmod +x /opt/bin/flanneld
-
-sudo apt-get install -y jq
-
-local_ip="$(ip --json addr show eth0 | jq -r '.[0].addr_info[] | select(.family == "inet") | .local')"
-
-sudo cat >/etc/default/kubelet <<EOF
-KUBELET_EXTRA_ARGS=--node-ip=$local_ip
-EOF
